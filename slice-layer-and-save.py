@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# v1.0.1
+# v1.1.0
 
 import os, glob, json
 from gimpfu import *
@@ -273,3 +273,4 @@ main()
 # CHANGELOG:
 # v1.0.0: Initial version.
 # v1.0.1: Fixed overwriting existing files.
+# v1.1.0: Skipping odd or even layers if specified.
