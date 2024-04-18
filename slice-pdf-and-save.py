@@ -107,8 +107,7 @@ def slice_layer_and_save(image, drawable, skipPages, saveFolder):
     # pdb.gimp_message("heeey 1.3, V guides: " + ", ".join([guide.to_json() for guide in guidesV]))
     
     rectangles = getRectangles(guidesH, guidesV)
-
-    pdb.gimp_message("heeey 1.4, rectangles: " + ", ".join([rect.to_json() for rect in rectangles]))
+    saveRectanglesAsImage(image, drawable, rectangles, saveFolder)
     # MAIN SCRIPT END
 
     # Close the undo group.
@@ -200,6 +199,19 @@ def getRectangles(guidesH, guidesV):
 
     return rectangles
 
+def saveRectanglesAsImage(image, drawable,rectangles, saveFolder):
+    # DEBUG: Restore the correct array range when it works
+    for i, rect in enumerate(rectangles):
+        filePath = os.path.join(saveFolder, "rect-{0:03d}.png".format(i+1))
+
+        newImage = gimp.Image(rect.width, rect.height, image.base_type)
+        layerCopy = pdb.gimp_layer_new_from_drawable(drawable, newImage)
+        newImage.add_layer(layerCopy, 0)
+        
+        pdb.gimp_layer_resize(layerCopy, rect.width, rect.height, -rect.x1, -rect.y1)
+
+        pdb.gimp_file_save(newImage, layerCopy, filePath, filePath)
+        gimp.delete(newImage)
 
 def inputValidation(image, saveFolder):
     errorMessage = ""
