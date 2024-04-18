@@ -83,6 +83,45 @@ def slice_layer_and_save(image, drawable, skipPages):
 
     # MAIN SCRIPT START
 
+    (guidesH, guidesV) = getGuides(image)
+    tryInsertHelperGuides(image, drawable, guidesH, guidesV)
+
+    # pdb.gimp_message("heeey 1.2, H guides: " + ", ".join([guide.to_json() for guide in guidesH]))
+    # pdb.gimp_message("heeey 1.3, V guides: " + ", ".join([guide.to_json() for guide in guidesV]))
+    
+    rectangles = getRectangles(guidesH, guidesV)
+
+    pdb.gimp_message("heeey 1.4, rectangles: " + ", ".join([rect.to_json() for rect in rectangles]))
+    # MAIN SCRIPT END
+
+    # Close the undo group.
+    pdb.gimp_undo_push_group_end(image)
+
+def exit_script(image, message):
+    pdb.gimp_undo_push_group_end(image)
+    pdb.gimp_message(message)
+
+def tryInsertHelperGuide(image, drawable, guides, orientation):
+   guideFound = False
+   imageWidth = pdb.gimp_image_width(image)
+
+   for guide in reversed(guides):
+       if guide.position == imageWidth:
+        guideFound = True
+        break
+    
+   if guideFound == False:
+        pdb.script_fu_guide_new_percent(image, drawable, orientation, 100)
+
+def tryInsertHelperGuides(image, drawable, guidesH, guidesV):
+   """	
+   Tries to insert a guide to the right side of the image.
+   This eases the process of creating rectangles from guides.
+   """
+   tryInsertHelperGuide(image, drawable, guidesH, 0)
+   tryInsertHelperGuide(image, drawable, guidesV, 1)
+
+def getGuides(image):
     guidesH = []
     guidesV = []
     # Init at +inf to allow entering the while loop first time.
@@ -117,11 +156,9 @@ def slice_layer_and_save(image, drawable, skipPages):
     guidesH.sort(key=lambda guide: guide.position)
     guidesV.sort(key=lambda guide: guide.position)
 
-    tryInsertHelperGuides(image, drawable, guidesV, guidesH)
+    return (guidesH, guidesV)
 
-    pdb.gimp_message("heeey 1.2, H guides: " + ", ".join([guide.to_json() for guide in guidesH]))
-    pdb.gimp_message("heeey 1.3, V guides: " + ", ".join([guide.to_json() for guide in guidesV]))
-    
+def getRectangles(guidesH, guidesV):
     rectangles = []
     # For each horizontal guide loop through all vertical guides
     previousHPos = 0
@@ -141,35 +178,7 @@ def slice_layer_and_save(image, drawable, skipPages):
         
         previousHPos = h_guide.position
 
-    pdb.gimp_message("heeey 1.4, rectangles: " + ", ".join([rect.to_json() for rect in rectangles]))
-    # MAIN SCRIPT END
-
-    # Close the undo group.
-    pdb.gimp_undo_push_group_end(image)
-
-def exit_script(image, message):
-    pdb.gimp_undo_push_group_end(image)
-    pdb.gimp_message(message)
-
-def tryInsertHelperGuide(image, drawable, guides, orientation):
-   guideFound = False
-   imageWidth = pdb.gimp_image_width(image)
-
-   for guide in reversed(guides):
-       if guide.position == imageWidth:
-        guideFound = True
-        break
-    
-   if guideFound == False:
-        pdb.script_fu_guide_new_percent(image, drawable, orientation, 100)
-
-def tryInsertHelperGuides(image, drawable, guidesV, guidesH):
-   """	
-   Tries to insert a guide to the right side of the image.
-   This eases the process of creating rectangles from guides.
-   """
-   tryInsertHelperGuide(image, drawable, guidesH, 0)
-   tryInsertHelperGuide(image, drawable, guidesV, 1)
+    return rectangles
 
 
 register(
