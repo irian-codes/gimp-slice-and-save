@@ -7,6 +7,11 @@ Use cases:
 - Extracting individual board game cards from PDFs shared by people
 - Save an image in different parts.
 
+## Instructional video
+
+- [Spanish](https://1drv.ms/u/s!At9UtWURDSwlic8ivmoBwWBo_pGkjw?e=Lrhypf)
+- [English](https://1drv.ms/u/s!At9UtWURDSwlic8kEIiBThGfEEqdxg?e=QbOSSK)
+
 ## Installation
 
 Check your GIMP plugins folder [like this](https://www.gimp-forum.net/Thread-Where-is-PLUGINS-in-GIMP). Then copy and paste `slice-layer-and-save.py` into that folder.
