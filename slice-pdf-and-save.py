@@ -107,8 +107,7 @@ def slice_layer_and_save(image, drawable, cardHeight, cardWidth, tolerance, skip
     saveRectanglesAsImage(image, drawable, rectangles, saveFolder)
     # MAIN SCRIPT END
 
-    # Close the undo group.
-    pdb.gimp_undo_push_group_end(image)
+    exit_script(image, "Done! Images saved in:\n" + saveFolder)
 
 def exit_script(image, message):
     pdb.gimp_undo_push_group_end(image)
