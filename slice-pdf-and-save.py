@@ -32,6 +32,7 @@ class Guide:
             "orientation": self.orientation,
             "position": self.position,
         }
+        
         return json.dumps(guide_dict)
 
 
