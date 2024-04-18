@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# v1.2.0
+# v1.2.1
 
 import os, glob, json
 from gimpfu import *
@@ -295,9 +295,3 @@ register(
     menu="<Image>/Tools",  # Menu path, f.e. <Image>/Tools/StandeesFiller.  Needs root image.
 )
 main()
-
-# CHANGELOG:
-# v1.0.0: Initial version.
-# v1.0.1: Fixed overwriting existing files.
-# v1.1.0: Skipping odd or even layers if specified.
-# v1.2.0: Skipping cards given a specific color and color distance value
