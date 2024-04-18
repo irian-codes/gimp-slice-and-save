@@ -88,6 +88,14 @@ class Rectangle:
         return json.dumps(rect_dict)
 
 def slice_layer_and_save(image, drawable, cardHeight, cardWidth, tolerance, skipLayers, skipColor, skipColorTolerance, saveFolder):
+    """
+    Main method of the script that ensure every operation is done.
+    1. Validates user input
+    2. Reads the guides on the layer and inserts some helper ones.
+    3. Gets all the rectangles of the layer, if they aren't skipped by skipLayers.
+    4. Saves each rectangle as an image, if it's average color is not the same as the skipColor.
+    5. Closes the GIMP undo group and exits with a completion message.
+    """
     # Set up an undo group, so the operation will be undone in one step.
     pdb.gimp_undo_push_group_start(image)
 
@@ -180,6 +188,16 @@ def getGuides(image):
     return (guidesH, guidesV)
 
 def getRectangles(guidesH, guidesV, cardHeight, cardWidth, tolerance):
+    """
+    Gets all the rectangles of a layer resulting from the divisions of the guides
+
+    Parameters:
+        guidesH (list): A list of horizontal guides.
+        guidesV (list): A list of vertical guides.
+        cardHeight (int): The height of the card in pixels.
+        cardWidth (int): The width of the card in pixels.
+        tolerance (int): The tolerance of the rectangles in pixels just in case the guides are not perfectly positioned.
+    """
     rectangles = []
     # For each horizontal guide loop through all vertical guides
     previousHPos = 0
@@ -206,6 +224,17 @@ def getRectangles(guidesH, guidesV, cardHeight, cardWidth, tolerance):
     return rectangles
 
 def saveRectanglesAsImage(image, drawable, rectangles, saveFolder, skipColor, skipColorTolerance):
+    """
+    Saves all the rectangles of a layer as an image, numbering them sequentially.
+
+    Parameters:
+       image (gimp.image): The GIMP image.
+       drawable (gimp.Drawable): The GIMP layer you want to save the rectangles from.
+       rectangles (list): A list of Rectangle objects.
+       saveFolder (str): The folder where you want to save the images.
+       skipColor (gimp.colorRGB): The color you want to skip.
+       skipColorTolerance (float): The tolerance of the color you want to skip (measured with the distance between colors).
+    """
     # Count all files in the folder so we don't overwrite existing ones
     existingFilesCount = len(glob.glob(saveFolder + "/*.*"))
     nextFileNum = existingFilesCount + 1
@@ -228,6 +257,19 @@ def saveRectanglesAsImage(image, drawable, rectangles, saveFolder, skipColor, sk
         nextFileNum += 1
 
 def isLayerAverageTargetColor(image, layer, rectangle, targetColor, colorTolerance):
+    """
+    Checks if the rectangle average color (measured with a radius from de center)
+    is the same as the target color. It allows a tolerance of the color in case
+    you pick a color that is not exactly the one you need.
+
+    Parameters:
+       image (gimp.image): The GIMP image.
+       drawable (gimp.Drawable): The GIMP layer you want to save the rectangles from.
+       rectangle (Rectangle): The rectangle you want to check.
+       targetColor (gimp.colorRGB): The color you want to check.
+       colorTolerance (float): The tolerance of the color you want to check (measured with the distance between colors).
+    """
+
     layer_name= layer.name
     middle_point_x = int(rectangle.x1 + rectangle.width / 2) 
     middle_point_y = int(rectangle.y1 + rectangle.height / 2)
@@ -294,4 +336,5 @@ register(
     slice_layer_and_save,
     menu="<Image>/Tools",  # Menu path, f.e. <Image>/Tools/StandeesFiller.  Needs root image.
 )
+
 main()
