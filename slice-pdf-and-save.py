@@ -78,6 +78,9 @@ class Rectangle:
         return json.dumps(rect_dict)
 
 def slice_layer_and_save(image, drawable, skipPages, saveFolder):
+    # Set up an undo group, so the operation will be undone in one step.
+    pdb.gimp_undo_push_group_start(image)
+
     inputValidationResult = inputValidation(image, saveFolder=saveFolder)
     
     if inputValidationResult[0] == False:
@@ -194,7 +197,9 @@ def inputValidation(image, saveFolder):
     errorMessage = ""
 
     if not os.path.exists(saveFolder):
+        errorMessage = "Folder {0} does not exist.".format(saveFolder)
         return (False, errorMessage)
+    
     return (True, "")
 
 register(
