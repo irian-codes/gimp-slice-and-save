@@ -87,7 +87,7 @@ class Rectangle:
 
         return json.dumps(rect_dict)
 
-def slice_layer_and_save(image, drawable, cardHeight, cardWidth, tolerance, skipPages, saveFolder):
+def slice_layer_and_save(image, drawable, cardHeight, cardWidth, tolerance, skipLayers, saveFolder):
     # Set up an undo group, so the operation will be undone in one step.
     pdb.gimp_undo_push_group_start(image)
 
@@ -104,7 +104,11 @@ def slice_layer_and_save(image, drawable, cardHeight, cardWidth, tolerance, skip
 
     rectangles = getRectangles(guidesH, guidesV, cardHeight, cardWidth, tolerance)
 
-    for layer in image.layers:
+    for i, layer in enumerate(image.layers):
+        # Skipping odd and even layers
+        if (skipLayers == 1 and i % 2 != 0) or (skipLayers == 0 and i % 2 == 0):
+            continue
+
         saveRectanglesAsImage(image, layer, rectangles, saveFolder)
 
     # MAIN SCRIPT END
@@ -247,7 +251,7 @@ register(
         (PF_INT, "tolerance", "Margin of error (in pixels)", 10),
         (
             PF_OPTION,
-            "skipPages",
+            "skipLayers",
             "Skip layers? (pages in a PDF)",
             2,
             ("Even", "Odd", "None"),
