@@ -103,10 +103,13 @@ def exit_script(image, message):
 
 def tryInsertHelperGuide(image, drawable, guides, orientation):
    guideFound = False
-   imageWidth = pdb.gimp_image_width(image)
+   if orientation == 1:
+       targetPosition = pdb.gimp_image_width(image)
+   else:
+       targetPosition = pdb.gimp_image_height(image)
 
    for guide in reversed(guides):
-       if guide.position == imageWidth:
+       if guide.position == targetPosition:
         guideFound = True
         break
     
