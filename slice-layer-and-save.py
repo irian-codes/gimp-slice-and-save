@@ -91,7 +91,7 @@ def slice_layer_and_save(image, drawable, cardHeight, cardWidth, tolerance, skip
     # Set up an undo group, so the operation will be undone in one step.
     pdb.gimp_undo_push_group_start(image)
 
-    inputValidationResult = inputValidation(image, saveFolder=saveFolder)
+    inputValidationResult = inputValidation(saveFolder)
     
     if inputValidationResult[0] == False:
         exit_script(image, inputValidationResult[1])
@@ -248,8 +248,12 @@ def isLayerAverageTargetColor(image, layer, rectangle, targetColor, colorToleran
 
     return picked_color.distance(targetColor) <= colorTolerance
 
-def inputValidation(image, saveFolder):
+def inputValidation(saveFolder):
     errorMessage = ""
+
+    if saveFolder is None:
+        errorMessage = "Please specify a save folder."
+        return (False, errorMessage)
 
     if not os.path.exists(saveFolder):
         errorMessage = "Folder {0} does not exist.".format(saveFolder)
@@ -284,13 +288,7 @@ register(
         ),
         (PF_COLOR, "skipColor", "Color to skip", (1.0, 1.0, 1.0)),
         (PF_FLOAT, "skipColorTolerance", "Margin of error (in color distance decimals)", 0.1),
-        (PF_DIRNAME, 'saveFolder', 'Save folder', '.')
-        # PF_SLIDER, SPINNER have an extra tuple (min, max, step)
-        # PF_RADIO has an extra tuples within a tuple:
-        # eg. (("radio_label", "radio_value), ...) for as many radio buttons
-        # PF_OPTION has an extra tuple containing options in drop-down list
-        # eg. ("opt1", "opt2", ...) for as many options
-        # see ui_examples_1.py and ui_examples_2.py for live examples
+        (PF_DIRNAME, 'saveFolder', 'Save folder', None)
     ],
     [],
     slice_layer_and_save,
