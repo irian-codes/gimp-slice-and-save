@@ -32,9 +32,50 @@ class Guide:
             "orientation": self.orientation,
             "position": self.position,
         }
-        
-        return json.dumps(guide_dict)
 
+        return json.dumps(guide_dict)
+    
+class Rectangle:
+    """
+    Represents a rectangular shape.
+
+    Attributes:
+        x1 (int): The x-coordinate of the top-left corner of the rectangle.
+        y1 (int): The y-coordinate of the top-left corner of the rectangle.
+        x2 (int): The x-coordinate of the bottom-right corner of the rectangle.
+        y2 (int): The y-coordinate of the bottom-right corner of the rectangle.
+    """
+    def __init__(self, x1, y1, x2, y2):
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
+    
+    def area(self):
+        """
+        Calculates the area of the rectangle.
+
+        Returns:
+            int: The area of the rectangle.
+        """
+        return (self.x2 - self.x1) * (self.y2 - self.y1)
+    
+    def to_json(self):
+        """
+        Converts the Rectangle object to a JSON-valid string.
+
+        Returns:
+            str: A JSON-valid string representing the Rectangle object.
+        """
+        rect_dict = {
+            "x1": self.x1,
+            "y1": self.y1,
+            "x2": self.x2,
+            "y2": self.y2,
+            "area": self.area(),
+        }
+
+        return json.dumps(rect_dict)
 
 def slice_layer_and_save(image, drawable, skipPages):
     # Set up an undo group, so the operation will be undone in one step.
@@ -80,6 +121,27 @@ def slice_layer_and_save(image, drawable, skipPages):
 
     pdb.gimp_message("heeey 1.2, H guides: " + ", ".join([guide.to_json() for guide in guidesH]))
     pdb.gimp_message("heeey 1.3, V guides: " + ", ".join([guide.to_json() for guide in guidesV]))
+    
+    rectangles = []
+    # For each horizontal guide loop through all vertical guides
+    previousHPos = 0
+    for h_guide in guidesH:
+        previousVPos = 0
+
+        for v_guide in guidesV:
+            x1 = previousVPos
+            y1 = previousHPos
+            x2 = v_guide.position
+            y2 = h_guide.position
+
+            rect = Rectangle(x1, y1, x2, y2)
+            rectangles.append(rect)
+
+            previousVPos = v_guide.position
+        
+        previousHPos = h_guide.position
+
+    pdb.gimp_message("heeey 1.4, rectangles: " + ", ".join([rect.to_json() for rect in rectangles]))
     # MAIN SCRIPT END
 
     # Close the undo group.
