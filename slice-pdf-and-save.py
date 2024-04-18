@@ -88,7 +88,7 @@ class Rectangle:
 
         return json.dumps(rect_dict)
 
-def slice_layer_and_save(image, drawable, skipPages, saveFolder):
+def slice_layer_and_save(image, drawable, cardHeight, cardWidth, tolerance, skipPages, saveFolder):
     # Set up an undo group, so the operation will be undone in one step.
     pdb.gimp_undo_push_group_start(image)
 
@@ -103,10 +103,7 @@ def slice_layer_and_save(image, drawable, skipPages, saveFolder):
     (guidesH, guidesV) = getGuides(image)
     tryInsertHelperGuides(image, drawable, guidesH, guidesV)
 
-    # pdb.gimp_message("heeey 1.2, H guides: " + ", ".join([guide.to_json() for guide in guidesH]))
-    # pdb.gimp_message("heeey 1.3, V guides: " + ", ".join([guide.to_json() for guide in guidesV]))
-    
-    rectangles = getRectangles(guidesH, guidesV)
+    rectangles = getRectangles(guidesH, guidesV, cardHeight, cardWidth, tolerance)
     saveRectanglesAsImage(image, drawable, rectangles, saveFolder)
     # MAIN SCRIPT END
 
@@ -177,7 +174,7 @@ def getGuides(image):
 
     return (guidesH, guidesV)
 
-def getRectangles(guidesH, guidesV):
+def getRectangles(guidesH, guidesV, cardHeight, cardWidth, tolerance):
     rectangles = []
     # For each horizontal guide loop through all vertical guides
     previousHPos = 0
@@ -189,9 +186,13 @@ def getRectangles(guidesH, guidesV):
             y1 = previousHPos
             x2 = v_guide.position
             y2 = h_guide.position
+            minArea = (cardHeight - tolerance) * (cardWidth - tolerance)
+            maxArea =  (cardHeight + tolerance) * (cardWidth + tolerance)
 
             rect = Rectangle(x1, y1, x2, y2)
-            rectangles.append(rect)
+
+            if minArea <= rect.area <= maxArea:
+                rectangles.append(rect)
 
             previousVPos = v_guide.position
         
@@ -237,6 +238,9 @@ register(
         # PF_IMAGE and PF_DRAWABLE are mandatory in <Image> scripts but careful because if the path it's only <Image> without nothing elste they get autoadded and if you specify them you'll get an error.
         (PF_IMAGE, "image", "Active image", None),
         (PF_DRAWABLE, "drawable", "Input layer", None),
+        (PF_INT, "cardHeight", "Card height (in pixels)", 0),
+        (PF_INT, "cardWidth", "Card width (in pixels)", 0),
+        (PF_INT, "tolerance", "Margin of error (in pixels)", 10),
         (
             PF_OPTION,
             "skipPages",
