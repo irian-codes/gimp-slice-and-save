@@ -110,8 +110,8 @@ def slice_layer_and_save(image, drawable, cardHeight, cardWidth, tolerance, skip
     exit_script(image, "Done! Images saved in:\n" + saveFolder)
 
 def exit_script(image, message):
-    pdb.gimp_undo_push_group_end(image)
     pdb.gimp_message(message)
+    pdb.gimp_undo_push_group_end(image)
 
 def tryInsertHelperGuide(image, drawable, guides, orientation):
    guideFound = False
