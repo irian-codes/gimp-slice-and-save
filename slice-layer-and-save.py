@@ -201,7 +201,6 @@ def getRectangles(guidesH, guidesV, cardHeight, cardWidth, tolerance):
     return rectangles
 
 def saveRectanglesAsImage(image, drawable,rectangles, saveFolder):
-    # DEBUG: Restore the correct array range when it works
     for i, rect in enumerate(rectangles):
         filePath = os.path.join(saveFolder, "rect-{0:03d}.png".format(i+1))
 
