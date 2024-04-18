@@ -87,7 +87,7 @@ class Rectangle:
 
         return json.dumps(rect_dict)
 
-def slice_layer_and_save(image, drawable, cardHeight, cardWidth, tolerance, skipLayers, saveFolder):
+def slice_layer_and_save(image, drawable, cardHeight, cardWidth, tolerance, skipLayers, skipColor, skipColorTolerance, saveFolder):
     # Set up an undo group, so the operation will be undone in one step.
     pdb.gimp_undo_push_group_start(image)
 
@@ -109,7 +109,7 @@ def slice_layer_and_save(image, drawable, cardHeight, cardWidth, tolerance, skip
         if (skipLayers == 1 and i % 2 != 0) or (skipLayers == 0 and i % 2 == 0):
             continue
 
-        saveRectanglesAsImage(image, layer, rectangles, saveFolder)
+        saveRectanglesAsImage(image, layer, rectangles, saveFolder, skipColor, skipColorTolerance)
 
     # MAIN SCRIPT END
 
@@ -205,12 +205,15 @@ def getRectangles(guidesH, guidesV, cardHeight, cardWidth, tolerance):
 
     return rectangles
 
-def saveRectanglesAsImage(image, drawable, rectangles, saveFolder):
+def saveRectanglesAsImage(image, drawable, rectangles, saveFolder, skipColor, skipColorTolerance):
     # Count all files in the folder so we don't overwrite existing ones
     existingFilesCount = len(glob.glob(saveFolder + "/*.*"))
     startNum = existingFilesCount + 1
 
     for i, rect in enumerate(rectangles):
+        if isLayerAverageTargetColor(image, drawable, skipColor, skipColorTolerance):
+            continue
+
         filePath = os.path.join(saveFolder, "rect-{0:03d}.png".format(startNum + i))
 
         newImage = gimp.Image(rect.width, rect.height, image.base_type)
@@ -221,6 +224,48 @@ def saveRectanglesAsImage(image, drawable, rectangles, saveFolder):
 
         pdb.gimp_file_save(newImage, layerCopy, filePath, filePath)
         gimp.delete(newImage)
+
+def isLayerAverageTargetColor(image, layer, targetColor, colorTolerance):
+    
+    # pdb.gimp_layer_set_offsets(layer, 0, 0)
+
+    layer_name= layer.name
+    layer_width = layer.width
+    layer_height = layer.height
+    layer_offsets = layer.offsets
+    middle_point_x = int(layer_offsets[0] + layer_width / 2) 
+    middle_point_y = int(layer_offsets[1] + layer_height / 2)
+    sample_merged = False
+    sample_average = True
+    average_radius = int(min(layer_width, layer_height) / 4)
+
+
+    # pdb.gimp_message("heeey 78.1: " + json.dumps({
+    #     "layer_name": layer_name,
+    #     "layer_width": layer_width,
+    #     "layer_height": layer_height,
+    #     "layer_offsets": layer_offsets,
+    #     "middle_point_x": middle_point_x,
+    #     "middle_point_y": middle_point_y,
+    #     "sample_merged": sample_merged,
+    #     "sample_average": sample_average,
+    #     "average_radius": average_radius,
+    #     "attr": dir(layer)
+    # }))
+
+    # targetColor = gimpcolor.RGB(*targetColor)
+
+    # Pick color and log it
+    picked_color = pdb.gimp_image_pick_color(image, layer, middle_point_x, middle_point_y, sample_merged, sample_average, average_radius)
+    pdb.gimp_message("heeey 78.3: " + json.dumps({
+        "picked_color": str(picked_color),
+        "target_color": str(targetColor),
+        "distance": str(picked_color.distance(targetColor)),
+        "isValid?": str(picked_color.distance(targetColor) <= colorTolerance)
+    }))
+    # pdb.gimp_message("heeey 78.4: attrs: " + json.dumps(dir(picked_color)))
+
+    return picked_color.distance(targetColor) <= colorTolerance
 
 def inputValidation(image, saveFolder):
     errorMessage = ""
@@ -256,6 +301,8 @@ register(
             2,
             ("Even", "Odd", "None"),
         ),
+        (PF_COLOR, "skipColor", "Color to skip", (1.0, 1.0, 1.0)),
+        (PF_FLOAT, "skipColorTolerance", "Margin of error (in color distance decimals)", 0.1),
         (PF_DIRNAME, 'saveFolder', 'Save folder', '.')
         # PF_SLIDER, SPINNER have an extra tuple (min, max, step)
         # PF_RADIO has an extra tuples within a tuple:
