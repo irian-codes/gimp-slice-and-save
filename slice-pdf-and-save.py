@@ -51,6 +51,7 @@ class Rectangle:
         self.x2 = x2
         self.y2 = y2
     
+    @property
     def area(self):
         """
         Calculates the area of the rectangle.
@@ -59,6 +60,14 @@ class Rectangle:
             int: The area of the rectangle.
         """
         return (self.x2 - self.x1) * (self.y2 - self.y1)
+    
+    @property
+    def width(self):
+        return self.x2 - self.x1
+    
+    @property
+    def height(self):
+        return self.y2 - self.y1
     
     def to_json(self):
         """
@@ -72,34 +81,37 @@ class Rectangle:
             "y1": self.y1,
             "x2": self.x2,
             "y2": self.y2,
-            "area": self.area(),
+            "height": self.height,
+            "width": self.width,
+            "area": self.area,
         }
 
         return json.dumps(rect_dict)
 
-def slice_layer_and_save(image, drawable, skipPages):
+def slice_layer_and_save(image, drawable, cardHeight, cardWidth, tolerance, skipPages, saveFolder):
     # Set up an undo group, so the operation will be undone in one step.
     pdb.gimp_undo_push_group_start(image)
+
+    inputValidationResult = inputValidation(image, saveFolder=saveFolder)
+    
+    if inputValidationResult[0] == False:
+        exit_script(image, inputValidationResult[1])
+        return
 
     # MAIN SCRIPT START
 
     (guidesH, guidesV) = getGuides(image)
     tryInsertHelperGuides(image, drawable, guidesH, guidesV)
 
-    # pdb.gimp_message("heeey 1.2, H guides: " + ", ".join([guide.to_json() for guide in guidesH]))
-    # pdb.gimp_message("heeey 1.3, V guides: " + ", ".join([guide.to_json() for guide in guidesV]))
-    
-    rectangles = getRectangles(guidesH, guidesV)
-
-    pdb.gimp_message("heeey 1.4, rectangles: " + ", ".join([rect.to_json() for rect in rectangles]))
+    rectangles = getRectangles(guidesH, guidesV, cardHeight, cardWidth, tolerance)
+    saveRectanglesAsImage(image, drawable, rectangles, saveFolder)
     # MAIN SCRIPT END
 
-    # Close the undo group.
-    pdb.gimp_undo_push_group_end(image)
+    exit_script(image, "Done! Images saved in:\n" + saveFolder)
 
 def exit_script(image, message):
-    pdb.gimp_undo_push_group_end(image)
     pdb.gimp_message(message)
+    pdb.gimp_undo_push_group_end(image)
 
 def tryInsertHelperGuide(image, drawable, guides, orientation):
    guideFound = False
@@ -161,7 +173,7 @@ def getGuides(image):
 
     return (guidesH, guidesV)
 
-def getRectangles(guidesH, guidesV):
+def getRectangles(guidesH, guidesV, cardHeight, cardWidth, tolerance):
     rectangles = []
     # For each horizontal guide loop through all vertical guides
     previousHPos = 0
@@ -173,9 +185,13 @@ def getRectangles(guidesH, guidesV):
             y1 = previousHPos
             x2 = v_guide.position
             y2 = h_guide.position
+            minArea = (cardHeight - tolerance) * (cardWidth - tolerance)
+            maxArea =  (cardHeight + tolerance) * (cardWidth + tolerance)
 
             rect = Rectangle(x1, y1, x2, y2)
-            rectangles.append(rect)
+
+            if minArea <= rect.area <= maxArea:
+                rectangles.append(rect)
 
             previousVPos = v_guide.position
         
@@ -183,6 +199,28 @@ def getRectangles(guidesH, guidesV):
 
     return rectangles
 
+def saveRectanglesAsImage(image, drawable,rectangles, saveFolder):
+    # DEBUG: Restore the correct array range when it works
+    for i, rect in enumerate(rectangles):
+        filePath = os.path.join(saveFolder, "rect-{0:03d}.png".format(i+1))
+
+        newImage = gimp.Image(rect.width, rect.height, image.base_type)
+        layerCopy = pdb.gimp_layer_new_from_drawable(drawable, newImage)
+        newImage.add_layer(layerCopy, 0)
+        
+        pdb.gimp_layer_resize(layerCopy, rect.width, rect.height, -rect.x1, -rect.y1)
+
+        pdb.gimp_file_save(newImage, layerCopy, filePath, filePath)
+        gimp.delete(newImage)
+
+def inputValidation(image, saveFolder):
+    errorMessage = ""
+
+    if not os.path.exists(saveFolder):
+        errorMessage = "Folder {0} does not exist.".format(saveFolder)
+        return (False, errorMessage)
+    
+    return (True, "")
 
 register(
     "python_fu_slice_layer_and_save",
@@ -199,6 +237,9 @@ register(
         # PF_IMAGE and PF_DRAWABLE are mandatory in <Image> scripts but careful because if the path it's only <Image> without nothing elste they get autoadded and if you specify them you'll get an error.
         (PF_IMAGE, "image", "Active image", None),
         (PF_DRAWABLE, "drawable", "Input layer", None),
+        (PF_INT, "cardHeight", "Card height (in pixels)", 0),
+        (PF_INT, "cardWidth", "Card width (in pixels)", 0),
+        (PF_INT, "tolerance", "Margin of error (in pixels)", 10),
         (
             PF_OPTION,
             "skipPages",
@@ -206,6 +247,7 @@ register(
             2,
             ("Even", "Odd", "None"),
         ),
+        (PF_DIRNAME, 'saveFolder', 'Save folder', '.')
         # PF_SLIDER, SPINNER have an extra tuple (min, max, step)
         # PF_RADIO has an extra tuples within a tuple:
         # eg. (("radio_label", "radio_value), ...) for as many radio buttons
