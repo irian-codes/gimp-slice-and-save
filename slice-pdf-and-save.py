@@ -77,7 +77,13 @@ class Rectangle:
 
         return json.dumps(rect_dict)
 
-def slice_layer_and_save(image, drawable, skipPages):
+def slice_layer_and_save(image, drawable, skipPages, saveFolder):
+    inputValidationResult = inputValidation(image, saveFolder=saveFolder)
+    
+    if inputValidationResult[0] == False:
+        exit_script(image, inputValidationResult[1])
+        return
+
     # Set up an undo group, so the operation will be undone in one step.
     pdb.gimp_undo_push_group_start(image)
 
@@ -184,6 +190,13 @@ def getRectangles(guidesH, guidesV):
     return rectangles
 
 
+def inputValidation(image, saveFolder):
+    errorMessage = ""
+
+    if not os.path.exists(saveFolder):
+        return (False, errorMessage)
+    return (True, "")
+
 register(
     "python_fu_slice_layer_and_save",
     "Slices a layer according to guides and saves each zone as a separate image",
@@ -206,6 +219,7 @@ register(
             2,
             ("Even", "Odd", "None"),
         ),
+        (PF_DIRNAME, 'saveFolder', 'Save folder', '.')
         # PF_SLIDER, SPINNER have an extra tuple (min, max, step)
         # PF_RADIO has an extra tuples within a tuple:
         # eg. (("radio_label", "radio_value), ...) for as many radio buttons
