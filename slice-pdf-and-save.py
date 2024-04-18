@@ -51,6 +51,7 @@ class Rectangle:
         self.x2 = x2
         self.y2 = y2
     
+    @property
     def area(self):
         """
         Calculates the area of the rectangle.
@@ -59,6 +60,14 @@ class Rectangle:
             int: The area of the rectangle.
         """
         return (self.x2 - self.x1) * (self.y2 - self.y1)
+    
+    @property
+    def width(self):
+        return self.x2 - self.x1
+    
+    @property
+    def height(self):
+        return self.y2 - self.y1
     
     def to_json(self):
         """
@@ -72,7 +81,9 @@ class Rectangle:
             "y1": self.y1,
             "x2": self.x2,
             "y2": self.y2,
-            "area": self.area(),
+            "height": self.height,
+            "width": self.width,
+            "area": self.area,
         }
 
         return json.dumps(rect_dict)
