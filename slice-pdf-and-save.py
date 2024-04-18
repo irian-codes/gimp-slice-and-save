@@ -76,6 +76,8 @@ def slice_layer_and_save(image, drawable, skipPages):
     guidesH.sort(key=lambda guide: guide.position)
     guidesV.sort(key=lambda guide: guide.position)
 
+    tryInsertRightImageGuide(image, drawable, guidesV)
+
     pdb.gimp_message("heeey 1.2, H guides: " + ", ".join([guide.to_json() for guide in guidesH]))
     pdb.gimp_message("heeey 1.3, V guides: " + ", ".join([guide.to_json() for guide in guidesV]))
     # MAIN SCRIPT END
@@ -86,6 +88,22 @@ def slice_layer_and_save(image, drawable, skipPages):
 def exit_script(image, message):
     pdb.gimp_undo_push_group_end(image)
     pdb.gimp_message(message)
+
+def tryInsertRightImageGuide(image, drawable, guidesV):
+   """	
+   Tries to insert a guide to the right side of the image.
+   This eases the process of creating rectangles from guides.
+   """
+   guideFound = False
+   imageWidth = pdb.gimp_image_width(image)
+
+   for guide in reversed(guidesV):
+       if guide.position == imageWidth:
+        guideFound = True
+        break
+    
+   if guideFound == False:
+        pdb.script_fu_guide_new_percent(image, drawable, 1, 100)
 
 
 register(
