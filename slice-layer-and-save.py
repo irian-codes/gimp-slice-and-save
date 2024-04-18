@@ -103,7 +103,10 @@ def slice_layer_and_save(image, drawable, cardHeight, cardWidth, tolerance, skip
     tryInsertHelperGuides(image, drawable, guidesH, guidesV)
 
     rectangles = getRectangles(guidesH, guidesV, cardHeight, cardWidth, tolerance)
-    saveRectanglesAsImage(image, drawable, rectangles, saveFolder)
+
+    for layer in image.layers:
+        saveRectanglesAsImage(image, layer, rectangles, saveFolder)
+
     # MAIN SCRIPT END
 
     exit_script(image, "Done! Images saved in:\n" + saveFolder)
