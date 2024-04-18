@@ -41,7 +41,8 @@ def slice_layer_and_save(image, drawable, skipPages):
 
     # MAIN SCRIPT START
 
-    guides = []
+    guidesH = []
+    guidesV = []
     # Init at +inf to allow entering the while loop first time.
     guideIndex = float("inf")
 
@@ -61,13 +62,21 @@ def slice_layer_and_save(image, drawable, skipPages):
         guideOrientation = pdb.gimp_image_get_guide_orientation(image, guideIndex)
         guidePosition = pdb.gimp_image_get_guide_position(image, guideIndex)
 
-        guides.append(Guide(guideIndex, guideOrientation, guidePosition))
+        if guideOrientation == 0:
+            guidesH.append(Guide(guideIndex, guideOrientation, guidePosition))
+        else:
+            guidesV.append(Guide(guideIndex, guideOrientation, guidePosition))
 
-    if len(guides) == 0:
+    if len(guidesH) == 0 and len(guidesV) == 0:
         exit_script(image, "No guides found. Please add at least one guide.")
         return
 
-    pdb.gimp_message("heeey 1.3: " + ", ".join([guide.to_json() for guide in guides]))
+    # I want the guides sorted first by Horizontal and then their position to group them.
+    guidesH.sort(key=lambda guide: guide.position)
+    guidesV.sort(key=lambda guide: guide.position)
+
+    pdb.gimp_message("heeey 1.2, H guides: " + ", ".join([guide.to_json() for guide in guidesH]))
+    pdb.gimp_message("heeey 1.3, V guides: " + ", ".join([guide.to_json() for guide in guidesV]))
     # MAIN SCRIPT END
 
     # Close the undo group.
