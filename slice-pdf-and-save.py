@@ -63,11 +63,19 @@ def slice_layer_and_save(image, drawable, skipPages):
 
         guides.append(Guide(guideIndex, guideOrientation, guidePosition))
 
+    if len(guides) == 0:
+        exit_script(image, "No guides found. Please add at least one guide.")
+        return
+
     pdb.gimp_message("heeey 1.3: " + ", ".join([guide.to_json() for guide in guides]))
     # MAIN SCRIPT END
 
     # Close the undo group.
     pdb.gimp_undo_push_group_end(image)
+
+def exit_script(image, message):
+    pdb.gimp_undo_push_group_end(image)
+    pdb.gimp_message(message)
 
 
 register(
