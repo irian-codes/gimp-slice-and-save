@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# v1.0.0
 
 import os
 import json
@@ -260,3 +261,6 @@ register(
     menu="<Image>/Tools",  # Menu path, f.e. <Image>/Tools/StandeesFiller.  Needs root image.
 )
 main()
+
+# CHANGELOG:
+# v1.0.0: Initial version.
