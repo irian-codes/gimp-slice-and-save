@@ -98,9 +98,6 @@ def slice_layer_and_save(image, drawable, skipPages, saveFolder):
         exit_script(image, inputValidationResult[1])
         return
 
-    # Set up an undo group, so the operation will be undone in one step.
-    pdb.gimp_undo_push_group_start(image)
-
     # MAIN SCRIPT START
 
     (guidesH, guidesV) = getGuides(image)
