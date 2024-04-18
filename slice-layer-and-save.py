@@ -1,10 +1,8 @@
 #!/usr/bin/env python
-# v1.0.0
+# v1.0.1
 
-import os
-import json
+import os, glob, json
 from gimpfu import *
-
 
 class Guide:
     """
@@ -200,9 +198,13 @@ def getRectangles(guidesH, guidesV, cardHeight, cardWidth, tolerance):
 
     return rectangles
 
-def saveRectanglesAsImage(image, drawable,rectangles, saveFolder):
+def saveRectanglesAsImage(image, drawable, rectangles, saveFolder):
+    # Count all files in the folder so we don't overwrite existing ones
+    existingFilesCount = len(glob.glob(saveFolder + "/*.*"))
+    startNum = existingFilesCount + 1
+
     for i, rect in enumerate(rectangles):
-        filePath = os.path.join(saveFolder, "rect-{0:03d}.png".format(i+1))
+        filePath = os.path.join(saveFolder, "rect-{0:03d}.png".format(startNum + i))
 
         newImage = gimp.Image(rect.width, rect.height, image.base_type)
         layerCopy = pdb.gimp_layer_new_from_drawable(drawable, newImage)
@@ -263,3 +265,4 @@ main()
 
 # CHANGELOG:
 # v1.0.0: Initial version.
+# v1.0.1: Fixed overwriting existing files.
