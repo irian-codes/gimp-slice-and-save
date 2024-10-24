@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# v1.2.1
+# v1.2.2
 
 import os, json
 from gimpfu import *
