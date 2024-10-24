@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-# v1.2.1
+# v1.2.2
 
-import os, glob, json
+import os, json
 from gimpfu import *
 
 class Guide:
@@ -236,7 +236,7 @@ def saveRectanglesAsImage(image, drawable, rectangles, saveFolder, skipColor, sk
        skipColorTolerance (float): The tolerance of the color you want to skip (measured with the distance between colors).
     """
     # Count all files in the folder so we don't overwrite existing ones
-    existingFilesCount = len(glob.glob(saveFolder + "/*.*"))
+    existingFilesCount = sum(1 for file in os.listdir(saveFolder) if os.path.isfile(os.path.join(saveFolder, file)))
     nextFileNum = existingFilesCount + 1
 
     for i, rect in enumerate(rectangles):
