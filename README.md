@@ -24,7 +24,7 @@ The GIMP 2 and GIMP 3 versions are separate. You can install both when the two G
 
 ### GIMP 2.10
 
-Copy the root [`slice-layer-and-save.py`](slice-layer-and-save.py) into your GIMP 2.10 plug-ins folder and restart GIMP. This original Python 2 version is unchanged.
+Copy [`gimp2/slice-layer-and-save.py`](gimp2/slice-layer-and-save.py) into your GIMP 2.10 plug-ins folder and restart GIMP. The original Python 2 script is unchanged apart from its location in this repository.
 
 ## How to use
 
