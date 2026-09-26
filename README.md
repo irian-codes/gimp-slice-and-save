@@ -19,7 +19,7 @@ The GIMP 2 and GIMP 3 versions are separate. You can install both when the two G
 ### GIMP 3.2
 
 1. In GIMP, open **Edit > Preferences > Folders > Plug-ins** to locate your user plug-ins folder. On Windows with GIMP 3.2, this is usually `%APPDATA%\GIMP\3.2\plug-ins`.
-2. Copy the entire [`gimp3/slice-layer-and-save`](gimp3/slice-layer-and-save) folder into that plug-ins folder. The final path should end in `plug-ins/slice-layer-and-save/slice-layer-and-save.py`.
+2. Create a `slice-layer-and-save` folder inside that plug-ins folder, then copy [`gimp3/slice-layer-and-save.py`](gimp3/slice-layer-and-save.py) into it. GIMP 3 expects the plug-in file in a folder with the same name, so the installed path should end in `plug-ins/slice-layer-and-save/slice-layer-and-save.py`.
 3. Restart GIMP. Open an image and select **Tools > Slice each layer using guides...**.
 
 ### GIMP 2.10
